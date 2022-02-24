@@ -17,8 +17,13 @@
 package com.akkaserverless.javasdk.impl
 
 import com.google.protobuf.{ ByteString, Descriptors, Message => JavaMessage, Parser }
-
 import java.util.concurrent.CompletionStage
+
+import com.fasterxml.jackson.databind.ObjectReader
+import com.fasterxml.jackson.databind.ObjectWriter
+import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper
+import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper
+import com.google.protobuf.UnsafeByteOperations
 
 /**
  * A resolved service method.
@@ -76,6 +81,25 @@ private final class ScalaPbResolvedType[T <: scalapb.GeneratedMessage](
     extends ResolvedType[T] {
   override def parseFrom(bytes: ByteString): T = companion.parseFrom(bytes.newCodedInput()).asInstanceOf[T]
   override def toByteString(value: T): ByteString = value.toByteString
+}
+
+private final class ProtoJacksonResolvedType[T](
+    override val typeClass: Class[T],
+    override val typeUrl: String,
+    mapper: ProtobufMapper)
+    extends ResolvedType[T] {
+  val schemaWrapper = mapper.generateSchemaFor(typeClass)
+
+  override def parseFrom(bytes: ByteString): T =
+    mapper
+      .readerFor(typeClass)
+      .`with`(schemaWrapper)
+      .readValue(bytes.toByteArray)
+
+  override def toByteString(value: T): ByteString = {
+    val array = mapper.writer(schemaWrapper).writeValueAsBytes(value)
+    ByteString.copyFrom(array) // FIXME: how to avoid this copy?
+  }
 }
 
 trait ResolvedEntityFactory {

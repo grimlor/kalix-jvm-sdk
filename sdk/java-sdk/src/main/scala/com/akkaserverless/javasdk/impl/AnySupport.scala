@@ -27,6 +27,7 @@ import scala.util.Try
 import com.akkaserverless.javasdk.JsonSupport
 import com.akkaserverless.javasdk.impl.AnySupport.Prefer.Java
 import com.akkaserverless.javasdk.impl.AnySupport.Prefer.Scala
+import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper
 import com.google.common.base.CaseFormat
 import com.google.protobuf.ByteString
 import com.google.protobuf.CodedInputStream
@@ -200,6 +201,8 @@ class AnySupport(
   import AnySupport._
   private val allDescriptors = flattenDescriptors(descriptors)
 
+  private val protobufMapper = new ProtobufMapper()
+
   private val allTypes = (for {
     descriptor <- allDescriptors.values
     messageType <- descriptor.getMessageTypes.asScala
@@ -245,7 +248,8 @@ class AnySupport(
             typeUrlPrefix + "/" + typeDescriptor.getFullName,
             parser))
       } else {
-        None
+        // FIXME: we need some mechanism to identify when we should use this ResolvedType or not
+        Some(new ProtoJacksonResolvedType(clazz, typeUrlPrefix + "/" + typeDescriptor.getFullName, protobufMapper))
       }
     } catch {
       case cnfe: ClassNotFoundException =>
