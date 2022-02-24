@@ -51,6 +51,7 @@ object Dependencies {
   val jacksonJsr310 = "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % JacksonVersion
   val jacksonParameterNames = "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % JacksonVersion
   val jacksonScala = "com.fasterxml.jackson.module" %% "jackson-module-scala" % JacksonVersion
+  val jacksonDataFormatProto = "com.fasterxml.jackson.dataformat" % "jackson-dataformat-protobuf" % JacksonVersion
 
   val scalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion
   val munit = "org.scalameta" %% "munit" % MunitVersion
@@ -96,7 +97,7 @@ object Dependencies {
   val sdkCore = deps ++= coreDeps
 
   // FIXME
-  val sdkJava = sdkCore
+  val sdkJava = deps ++= coreDeps ++ Seq(jacksonDataFormatProto)
 
   val sdkJavaTestKit = deps ++= Seq(
     testContainers,
