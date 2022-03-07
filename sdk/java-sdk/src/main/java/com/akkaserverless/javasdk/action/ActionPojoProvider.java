@@ -19,10 +19,12 @@ package com.akkaserverless.javasdk.action;
 import com.akkaserverless.javasdk.impl.ProtoDescriptorGenerator;
 import com.akkaserverless.javasdk.impl.action.ActionReflectiveRouter;
 import com.akkaserverless.javasdk.impl.action.ActionRouter;
+import com.akkaserverless.serializer.Serializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.EmptyProto;
 
+import java.util.Map;
 import java.util.function.Function;
 
 public class ActionPojoProvider<A extends Action> implements ActionProvider<A> {
@@ -71,5 +73,10 @@ public class ActionPojoProvider<A extends Action> implements ActionProvider<A> {
         EmptyProto.getDescriptor(),
         fileDescriptor
     };
+  }
+
+  @Override
+  public Map<Class<?>, Serializer> additionalSerializers() {
+    return Serializer.buildSerializersJava(getClass().getClassLoader(), fileDescriptor);
   }
 }

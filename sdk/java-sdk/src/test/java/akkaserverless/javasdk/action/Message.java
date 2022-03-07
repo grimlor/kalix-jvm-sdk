@@ -19,11 +19,13 @@ package akkaserverless.javasdk.action;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Number {
-  public final long value;
+public class Message {
+
+  public final String value;
 
   @JsonCreator
-  public Number(@JsonProperty("value") long value) {
+  public Message(@JsonProperty("value") String value) {
     this.value = value;
   }
+
 }

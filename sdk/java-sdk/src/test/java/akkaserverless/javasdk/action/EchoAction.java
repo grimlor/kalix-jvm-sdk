@@ -18,10 +18,13 @@ package akkaserverless.javasdk.action;
 
 import com.akkaserverless.javasdk.action.Action;
 
-public class EchoNumberAction extends Action {
+public class EchoAction extends Action {
 
-  public Effect<Number> echo(Number number) {
+  public Effect<Number> echoNumber(Number number) {
     return effects().reply(number);
   }
 
+  public Effect<Message> echoMessage(Message number) {
+    return effects().reply(number);
+  }
 }

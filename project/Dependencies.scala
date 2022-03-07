@@ -94,10 +94,10 @@ object Dependencies {
     jacksonJsr310,
     jacksonParameterNames)
 
-  val sdkCore = deps ++= coreDeps
+  val sdkCore = deps ++= coreDeps ++ Seq(jacksonDataFormatProto)
 
   // FIXME
-  val sdkJava = deps ++= coreDeps ++ Seq(jacksonDataFormatProto)
+  val sdkJava = deps ++= coreDeps
 
   val sdkJavaTestKit = deps ++= Seq(
     testContainers,

@@ -55,7 +55,7 @@ object ProtoDescriptorGenerator {
           .setName(field.name)
           .setNumber(field.id)
           // FIXME: we will have to map all scalar types by had, for now, only Long
-          .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_SINT64)
+          .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_INT64)
           .build()
       }
 

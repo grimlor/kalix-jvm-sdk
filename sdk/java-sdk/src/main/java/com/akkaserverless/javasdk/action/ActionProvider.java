@@ -17,7 +17,11 @@
 package com.akkaserverless.javasdk.action;
 
 import com.akkaserverless.javasdk.impl.action.ActionRouter;
+import com.akkaserverless.serializer.Serializer;
 import com.google.protobuf.Descriptors;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Register an Action in {{@link com.akkaserverless.javasdk.AkkaServerless}} using an <code>
@@ -33,4 +37,8 @@ public interface ActionProvider<A extends Action> {
   ActionRouter<A> newRouter(ActionCreationContext context);
 
   Descriptors.FileDescriptor[] additionalDescriptors();
+
+  default Map<Class<?>, Serializer> additionalSerializers() {
+    return new HashMap<>();
+  }
 }

@@ -22,7 +22,6 @@ import akka.NotUsed
 import akka.stream.javadsl.Source
 import com.akkaserverless.javasdk.action.Action
 import com.akkaserverless.javasdk.action.MessageEnvelope
-import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper
 
 object ActionReflectiveRouter {
   case class MethodDesc private[javasdk] (javaMethod: Method) {
@@ -48,7 +47,9 @@ class ActionReflectiveRouter[A <: Action](override val action: A) extends Action
     allHandlers.getOrElse(commandName, throw new RuntimeException(s"no matching method for '$commandName'"))
 
   override def handleUnary(commandName: String, message: MessageEnvelope[Any]): Action.Effect[_] =
-    methodLookup(commandName).javaMethod.invoke(message.payload()).asInstanceOf[Action.Effect[_]]
+    methodLookup(commandName).javaMethod
+      .invoke(action, message.payload())
+      .asInstanceOf[Action.Effect[_]]
 
   override def handleStreamedOut(
       commandName: String,

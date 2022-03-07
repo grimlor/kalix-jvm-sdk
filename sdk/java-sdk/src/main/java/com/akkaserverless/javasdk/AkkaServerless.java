@@ -40,6 +40,7 @@ import com.akkaserverless.javasdk.valueentity.ValueEntityOptions;
 import com.akkaserverless.javasdk.valueentity.ValueEntityProvider;
 import com.akkaserverless.javasdk.view.ViewProvider;
 import com.akkaserverless.replicatedentity.ReplicatedData;
+import com.akkaserverless.serializer.Serializer;
 import com.google.protobuf.Descriptors;
 import com.typesafe.config.Config;
 
@@ -117,6 +118,24 @@ public final class AkkaServerless {
         Descriptors.FileDescriptor... additionalDescriptors) {
 
       final AnySupport anySupport = newAnySupport(additionalDescriptors);
+
+      ActionFactory resolvedActionFactory =
+          new ResolvedActionFactory(actionFactory, anySupport.resolveServiceDescriptor(descriptor));
+
+      ActionService service = new ActionService(resolvedActionFactory, descriptor, anySupport);
+
+      services.put(descriptor.getFullName(), system -> service);
+
+      return AkkaServerless.this;
+    }
+
+    public AkkaServerless registerAction(
+        ActionFactory actionFactory,
+        Descriptors.ServiceDescriptor descriptor,
+        Map<Class<?> , Serializer> additionalSerializers,
+        Descriptors.FileDescriptor... additionalDescriptors) {
+
+      final AnySupport anySupport = newAnySupport(additionalDescriptors, additionalSerializers);
 
       ActionFactory resolvedActionFactory =
           new ResolvedActionFactory(actionFactory, anySupport.resolveServiceDescriptor(descriptor));
@@ -347,7 +366,7 @@ public final class AkkaServerless {
    */
   public AkkaServerless register(ActionProvider provider) {
     return lowLevel.registerAction(
-        provider::newRouter, provider.serviceDescriptor(), provider.additionalDescriptors());
+        provider::newRouter, provider.serviceDescriptor(),  provider.additionalSerializers(), provider.additionalDescriptors());
   }
 
   /**
@@ -390,6 +409,10 @@ public final class AkkaServerless {
   }
 
   private AnySupport newAnySupport(Descriptors.FileDescriptor[] descriptors) {
-    return new AnySupport(descriptors, classLoader, typeUrlPrefix, prefer);
+    return new AnySupport(descriptors, classLoader, typeUrlPrefix, prefer, new HashMap<>());
+  }
+
+  private AnySupport newAnySupport(Descriptors.FileDescriptor[] descriptors, Map<Class<?>, Serializer> additionalSerializers) {
+    return new AnySupport(descriptors, classLoader, typeUrlPrefix, prefer, additionalSerializers);
   }
 }

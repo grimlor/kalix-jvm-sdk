@@ -16,7 +16,9 @@
 
 package com.akkaserverless.javasdk.impl
 
-import akkaserverless.javasdk.action.EchoNumberAction
+import scala.jdk.CollectionConverters.ListHasAsScala
+
+import akkaserverless.javasdk.action.EchoAction
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
@@ -24,16 +26,28 @@ class ProtoDescriptorGeneratorSpec extends AnyWordSpecLike with Matchers {
 
   "ProtoDescriptorGenerator" should {
     "generate a descriptor from a POJO" in {
-      val descriptor = ProtoDescriptorGenerator.generateFileDescriptorAction(classOf[EchoNumberAction])
+      val descriptor = ProtoDescriptorGenerator.generateFileDescriptorAction(classOf[EchoAction])
 
       // very simplistic test to start with
       val service = descriptor.getServices.get(0)
-      service.getName shouldBe "EchoNumberAction"
+      service.getName shouldBe "EchoAction"
 
-      service.getMethods.size() shouldBe 1
-      val method = service.getMethods.get(0)
-      method.getInputType.getFullName shouldBe "akkaserverless.javasdk.action.Number"
-      method.getOutputType.getFullName shouldBe "akkaserverless.javasdk.action.Number"
+      service.getMethods.size() shouldBe 2
+
+      val sortedMethods = service.getMethods.asScala.sortBy(_.getFullName)
+
+      {
+        val method = sortedMethods.head
+        method.getInputType.getFullName shouldBe "akkaserverless.javasdk.action.Message"
+        method.getOutputType.getFullName shouldBe "akkaserverless.javasdk.action.Message"
+      }
+
+      {
+        val method = sortedMethods(1)
+        method.getInputType.getFullName shouldBe "akkaserverless.javasdk.action.Number"
+        method.getOutputType.getFullName shouldBe "akkaserverless.javasdk.action.Number"
+      }
+
     }
   }
 }
