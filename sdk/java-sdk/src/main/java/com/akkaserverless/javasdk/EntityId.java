@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package akkaserverless.javasdk.action;
+package com.akkaserverless.javasdk;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class Number {
-
-  public final long value;
-
-  @JsonCreator
-  public Number(@JsonProperty("value") long value) {
-    this.value = value;
-  }
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface EntityId {
 }

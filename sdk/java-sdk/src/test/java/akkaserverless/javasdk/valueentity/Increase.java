@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package akkaserverless.javasdk.action;
+package akkaserverless.javasdk.valueentity;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.akkaserverless.javasdk.EntityId;
 
-public class Number {
+public class Increase {
 
-  public final long value;
+  @EntityId
+  final public String counterId;
+  final public long increaseBy;
 
-  @JsonCreator
-  public Number(@JsonProperty("value") long value) {
-    this.value = value;
+  public Increase(String counterId, long increaseBy) {
+    this.counterId = counterId;
+    this.increaseBy = increaseBy;
   }
 }

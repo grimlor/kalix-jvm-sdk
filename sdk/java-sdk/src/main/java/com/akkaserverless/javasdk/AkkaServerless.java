@@ -163,6 +163,27 @@ public final class AkkaServerless {
         Descriptors.ServiceDescriptor descriptor,
         String entityType,
         ValueEntityOptions entityOptions,
+        Map<Class<?> , Serializer> additionalSerializers,
+        Descriptors.FileDescriptor... additionalDescriptors) {
+
+      AnySupport anySupport = newAnySupport(additionalDescriptors, additionalSerializers);
+      ValueEntityFactory resolvedFactory =
+          new ResolvedValueEntityFactory(factory, anySupport.resolveServiceDescriptor(descriptor));
+
+      services.put(
+          descriptor.getFullName(),
+          system ->
+              new ValueEntityService(
+                  resolvedFactory, descriptor, anySupport, entityType, entityOptions));
+
+      return AkkaServerless.this;
+    }
+
+    public AkkaServerless registerValueEntity(
+        ValueEntityFactory factory,
+        Descriptors.ServiceDescriptor descriptor,
+        String entityType,
+        ValueEntityOptions entityOptions,
         Descriptors.FileDescriptor... additionalDescriptors) {
 
       AnySupport anySupport = newAnySupport(additionalDescriptors);
@@ -318,6 +339,7 @@ public final class AkkaServerless {
         provider.serviceDescriptor(),
         provider.entityType(),
         provider.options(),
+        provider.additionalSerializers(),
         provider.additionalDescriptors());
   }
 

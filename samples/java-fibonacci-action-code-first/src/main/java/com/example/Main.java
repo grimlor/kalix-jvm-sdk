@@ -9,7 +9,7 @@ import com.akkaserverless.javasdk.AkkaServerless;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.example.fibonacci.FibonacciAction;
-import com.akkaserverless.javasdk.action.ActionPojoProvider;
+import com.akkaserverless.javasdk.action.ReflectiveActionProvider;
 
 public final class Main {
 
@@ -17,7 +17,7 @@ public final class Main {
 
   public static AkkaServerless createAkkaServerless() {
     AkkaServerless akkaServerless = new AkkaServerless();
-    akkaServerless.register(ActionPojoProvider.of(FibonacciAction.class,__ -> new FibonacciAction()));
+    akkaServerless.register(ReflectiveActionProvider.of(FibonacciAction.class,__ -> new FibonacciAction()));
     return akkaServerless;
   }
 

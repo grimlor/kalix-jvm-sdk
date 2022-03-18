@@ -23,16 +23,9 @@ import akka.stream.javadsl.Source
 import com.akkaserverless.javasdk.action.Action
 import com.akkaserverless.javasdk.action.MessageEnvelope
 
-object ActionReflectiveRouter {
-  case class MethodDesc private[javasdk] (javaMethod: Method) {
-    // action's handlers have one single param, always
-    final val inputType: Class[_] = javaMethod.getParameterTypes().head
-  }
-}
-
 class ActionReflectiveRouter[A <: Action](override val action: A) extends ActionRouter[A](action) {
 
-  val allHandlers: Map[String, ActionReflectiveRouter.MethodDesc] =
+  private val allHandlers: Map[String, Method] =
     // FIXME: names must be unique, overloading shouldn't be allowed,
     //  we should detect it here and fail-fast
     action.getClass.getDeclaredMethods.toList
@@ -40,14 +33,14 @@ class ActionReflectiveRouter[A <: Action](override val action: A) extends Action
       .filter(_.getReturnType == classOf[Action.Effect[_]])
       // and with one single input param
       .filter(_.getParameters.length == 1)
-      .map { javaMethod => (javaMethod.getName.capitalize, ActionReflectiveRouter.MethodDesc(javaMethod)) }
+      .map { javaMethod => (javaMethod.getName.capitalize, javaMethod) }
       .toMap
 
   private def methodLookup(commandName: String) =
     allHandlers.getOrElse(commandName, throw new RuntimeException(s"no matching method for '$commandName'"))
 
   override def handleUnary(commandName: String, message: MessageEnvelope[Any]): Action.Effect[_] =
-    methodLookup(commandName).javaMethod
+    methodLookup(commandName)
       .invoke(action, message.payload())
       .asInstanceOf[Action.Effect[_]]
 

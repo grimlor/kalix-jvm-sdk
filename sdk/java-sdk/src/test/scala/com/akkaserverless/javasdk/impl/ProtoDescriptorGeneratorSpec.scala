@@ -16,16 +16,19 @@
 
 package com.akkaserverless.javasdk.impl
 
+import scala.jdk.CollectionConverters.IteratorHasAsScala
 import scala.jdk.CollectionConverters.ListHasAsScala
 
 import akkaserverless.javasdk.action.EchoAction
+import akkaserverless.javasdk.valueentity.Counter
+import org.scalatest.OptionValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class ProtoDescriptorGeneratorSpec extends AnyWordSpecLike with Matchers {
+class ProtoDescriptorGeneratorSpec extends AnyWordSpecLike with Matchers with OptionValues {
 
   "ProtoDescriptorGenerator" should {
-    "generate a descriptor from a POJO" in {
+    "generate a descriptor from an Action class" in {
       val descriptor = ProtoDescriptorGenerator.generateFileDescriptorAction(classOf[EchoAction])
 
       // very simplistic test to start with
@@ -47,6 +50,32 @@ class ProtoDescriptorGeneratorSpec extends AnyWordSpecLike with Matchers {
         method.getInputType.getFullName shouldBe "akkaserverless.javasdk.action.Number"
         method.getOutputType.getFullName shouldBe "akkaserverless.javasdk.action.Number"
       }
+
+    }
+
+    "generate a descriptor from an ValueEntity class" in {
+      val descriptor = ProtoDescriptorGenerator.generateFileDescriptorValueEntity(classOf[Counter])
+
+      val service = descriptor.getServices.get(0)
+      service.getName shouldBe "Counter"
+
+      service.getMethods.size() shouldBe 1
+
+      val method = service.getMethods.asScala.head
+      val increaseDescriptor = method.getInputType
+      increaseDescriptor.getFullName shouldBe "akkaserverless.javasdk.valueentity.Increase"
+
+      // counterId is the field marked with EntityId
+      val counterIdField =
+        increaseDescriptor.getFields.iterator.asScala.find { _.getName.endsWith("counterId") }.get
+
+      val fieldOption =
+        counterIdField.toProto.getOptions
+          .getExtension(com.akkaserverless.Annotations.field)
+
+      fieldOption.getEntityKey shouldBe true
+
+      method.getOutputType.getFullName shouldBe "akkaserverless.javasdk.valueentity.Ok"
 
     }
   }

@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package akkaserverless.javasdk.action;
+package akkaserverless.javasdk.valueentity;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+public class CounterState {
+  final public long value;
 
-public class Number {
-
-  public final long value;
-
-  @JsonCreator
-  public Number(@JsonProperty("value") long value) {
+  public CounterState(long value) {
     this.value = value;
+  }
+
+  public CounterState increase(long value) {
+    return new CounterState(this.value + value);
   }
 }

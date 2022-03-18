@@ -20,14 +20,12 @@ import com.akkaserverless.javasdk.impl.ProtoDescriptorGenerator;
 import com.akkaserverless.javasdk.impl.action.ActionReflectiveRouter;
 import com.akkaserverless.javasdk.impl.action.ActionRouter;
 import com.akkaserverless.serializer.Serializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.EmptyProto;
 
 import java.util.Map;
 import java.util.function.Function;
 
-public class ActionPojoProvider<A extends Action> implements ActionProvider<A> {
+public class ReflectiveActionProvider<A extends Action> implements ActionProvider<A> {
 
   private final Function<ActionCreationContext, A> factory;
 
@@ -35,15 +33,11 @@ public class ActionPojoProvider<A extends Action> implements ActionProvider<A> {
   private final Descriptors.FileDescriptor fileDescriptor;
   private final Descriptors.ServiceDescriptor serviceDescriptor;
 
-  public static <A extends Action> ActionPojoProvider<A> of(Class<A> cls, Function<ActionCreationContext, A> factory) {
-    try {
-      return new ActionPojoProvider<>(cls, factory, ActionOptions.defaults());
-    } catch (JsonMappingException e) {
-      throw new RuntimeException(e);
-    }
+  public static <A extends Action> ReflectiveActionProvider<A> of(Class<A> cls, Function<ActionCreationContext, A> factory) {
+    return new ReflectiveActionProvider<>(cls, factory, ActionOptions.defaults());
   }
 
-  private ActionPojoProvider(Class<A> cls, Function<ActionCreationContext, A> factory, ActionOptions options) throws JsonMappingException {
+  private ReflectiveActionProvider(Class<A> cls, Function<ActionCreationContext, A> factory, ActionOptions options) {
     this.factory = factory;
     this.options = options;
     this.fileDescriptor = ProtoDescriptorGenerator.generateFileDescriptorAction(cls);
@@ -69,8 +63,7 @@ public class ActionPojoProvider<A extends Action> implements ActionProvider<A> {
 
   @Override
   public Descriptors.FileDescriptor[] additionalDescriptors() {
-    return new Descriptors.FileDescriptor[] {
-        EmptyProto.getDescriptor(),
+    return new Descriptors.FileDescriptor[]{
         fileDescriptor
     };
   }

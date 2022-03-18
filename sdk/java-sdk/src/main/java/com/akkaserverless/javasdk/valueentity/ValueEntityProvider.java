@@ -17,7 +17,11 @@
 package com.akkaserverless.javasdk.valueentity;
 
 import com.akkaserverless.javasdk.impl.valueentity.ValueEntityRouter;
+import com.akkaserverless.serializer.Serializer;
 import com.google.protobuf.Descriptors;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Register a value based entity in {@link com.akkaserverless.javasdk.AkkaServerless} using a <code>
@@ -35,4 +39,8 @@ public interface ValueEntityProvider<S, E extends ValueEntity<S>> {
   ValueEntityRouter<S, E> newRouter(ValueEntityContext context);
 
   Descriptors.FileDescriptor[] additionalDescriptors();
+
+  default Map<Class<?>, Serializer> additionalSerializers() {
+    return new HashMap<>();
+  }
 }

@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package akkaserverless.javasdk.action;
+package akkaserverless.javasdk.valueentity;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public class Number {
 
-  public final long value;
-
-  @JsonCreator
-  public Number(@JsonProperty("value") long value) {
-    this.value = value;
-  }
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+public class Ok {
 }
