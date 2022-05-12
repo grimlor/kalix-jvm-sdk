@@ -43,21 +43,28 @@ object ActionTestKitGenerator {
           "kalix.scalasdk.testkit.ActionResult",
           "kalix.scalasdk.testkit.impl.ActionResultImpl",
           "kalix.scalasdk.action.ActionCreationContext",
-          "kalix.scalasdk.testkit.impl.TestKitActionContext") ++ commandStreamedTypes(service.commands))
+          "kalix.scalasdk.testkit.impl.TestKitActionContext",
+          "kalix.scalasdk.testkit.impl.TestKitTimerScheduler") ++ commandStreamedTypes(service.commands))
 
     val actionClassName = service.className
 
     val methods = service.commands.map { cmd =>
-      s"""def ${lowerFirst(cmd.name)}(command: ${selectInput(
-        cmd)}, metadata: Metadata = Metadata.empty): ${selectOutputResult(cmd)} = {\n""" +
-      "  val context = new TestKitActionContext(metadata)\n" +
-      (if (cmd.isUnary || cmd.isStreamIn) {
-         s"""  new ActionResultImpl(newActionInstance(context).${lowerFirst(cmd.name)}(command))"""
-       } else {
-         s"""  newActionInstance(context).${lowerFirst(
-           cmd.name)}(command).map(effect => new ActionResultImpl(effect))"""
-       }) + "\n" +
-      "}\n"
+
+      val actionResultInstance =
+        if (cmd.isUnary || cmd.isStreamIn)
+          s"""new ActionResultImpl(actionInstance.${lowerFirst(cmd.name)}(command), timerScheduler)"""
+        else
+          s"""actionInstance.${lowerFirst(
+            cmd.name)}(command).map(effect => new ActionResultImpl(effect, timerScheduler))"""
+
+      s"""|def ${lowerFirst(cmd.name)}(command: ${selectInput(
+        cmd)}, metadata: Metadata = Metadata.empty): ${selectOutputResult(cmd)} = {
+          |  val context = new TestKitActionContext(metadata)
+          |  val actionInstance = newActionInstance(context)
+          |  $actionResultInstance
+          |}
+        """.stripMargin
+
     }
 
     File.scala(
@@ -87,9 +94,12 @@ object ActionTestKitGenerator {
           | */
           |final class ${actionClassName}TestKit private(actionFactory: ActionCreationContext => $actionClassName) {
           |
+          |  private val timerScheduler: TestKitTimerScheduler = new TestKitTimerScheduler
+          |  
           |  private def newActionInstance(context: TestKitActionContext) = {
           |    val action = actionFactory(context)
           |    action._internalSetActionContext(Some(context))
+          |    action._internalSetTimerScheduler(timerScheduler)
           |    action
           |  }
           |
